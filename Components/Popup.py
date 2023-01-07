@@ -1,4 +1,4 @@
-import Components.Board
+from Components.Board import Board
 
 
 class Popup:
@@ -8,7 +8,7 @@ class Popup:
         self.location = pos
         self.size = size
 
-    def popup(self, board: Components.Board.Board):
+    def popup(self, board: Board):
         # for the chess game the popup only needs to show until the player clicks on a piece.
         # when a piece is clicked the board is redrawn
         board.board.set_ui("popup", self.image, self.location, self.size)

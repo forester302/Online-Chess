@@ -12,6 +12,8 @@ class ScreenManager:
         self._screens.pop(name)
 
     def set_screen(self, name: str, screen: Screen = None):
+        if self.current_screen is not None:
+            self._screens[self.current_screen].hide_screen()
         if screen is not None:
             self.add_screen(name, screen)
         self.current_screen = name

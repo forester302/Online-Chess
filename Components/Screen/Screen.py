@@ -3,18 +3,22 @@ from Components.Screen.ScreenObjects.ScreenObject import ScreenObject
 
 
 class Screen:
-    _objects: dict[str, ScreenObject] = {}
-    screen = None
-
     def __init__(self, size, framerate: int = 60, bgcolour: tuple = (0, 0, 0)):
         self.size = size
         self.clock = pygame.time.Clock()
         self.framerate = framerate
         self.bgcolour = bgcolour
+        self._objects: dict[str, ScreenObject] = {}
+        self.screen = None
+        self.enabled = False
 
     def make_screen(self):
+        self.enabled = True
         self.screen = pygame.display.set_mode(self.size)
         self.draw()
+
+    def hide_screen(self):
+        self.enabled = False
 
     def tick(self):
         self.clock.tick(self.framerate)
@@ -35,11 +39,15 @@ class Screen:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for obj in self._objects.values():
                     obj.click()
+                    if not self.enabled: break
             if event.type == pygame.KEYDOWN:
                 for obj in self._objects.values():
                     obj.key_down(event)
+                    if not self.enabled: break
             for obj in self._objects.values():
                 obj.check_mouse(pygame.mouse.get_pos())
+                if not self.enabled: break
+
         return True
 
     def draw(self):

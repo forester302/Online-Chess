@@ -49,6 +49,18 @@ class Pawn(Piece):
     def attack_moves(self, board):
         return [[self.x + 1, self.y + 1], [self.x - 1, self.y + 1]]
 
+    def move(self, board, network):
+        moved = super().move(board, network)
+        if not moved:
+            return moved
+        if not self.y == 0:
+            return moved
+
+        # promotion
+        from Components.Board import promotion
+        promotion(self, board, network)
+        return moved
+
 
 # class representing a rook in a chess game
 class Rook(Piece):
@@ -84,25 +96,14 @@ class Knight(Piece):
         # call the parent class's __init__ method to initialize the piece
         super().__init__(pos, d)
 
-    def attack_moves(self, board, enemy: bool = None):
-        return [(self.x - 1, self.y - 2), (self.x + 1, self.y - 2), (self.x - 1, self.y + 2), (self.x + 1, self.y + 2),
-                (self.x - 2, self.y - 1), (self.x + 2, self.y - 1), (self.x - 2, self.y + 1), (self.x + 2, self.y + 1)]
+    def attack_moves(self, board):
+        return [[self.x - 1, self.y - 2], [self.x + 1, self.y - 2],
+                [self.x - 1, self.y + 2], [self.x + 1, self.y + 2],
+                [self.x - 2, self.y - 1], [self.x + 2, self.y - 1],
+                [self.x - 2, self.y + 1], [self.x + 2, self.y + 1]]
 
     def possible_moves(self, board):
-        # list to store the possible moves
-        moves = []
-        # 2u1l, 2u1r, 2r1u, 2r1d, 2l1u, 2l1d, 2d1l, 2d1r
-        # check each possible move and add it to the list if it is valid
-        self.check_move((self.x - 1, self.y - 2), moves, board)
-        self.check_move((self.x + 1, self.y - 2), moves, board)
-        self.check_move((self.x - 1, self.y + 2), moves, board)
-        self.check_move((self.x + 1, self.y + 2), moves, board)
-        self.check_move((self.x - 2, self.y - 1), moves, board)
-        self.check_move((self.x + 2, self.y - 1), moves, board)
-        self.check_move((self.x - 2, self.y + 1), moves, board)
-        self.check_move((self.x + 2, self.y + 1), moves, board)
-        # return the list of possible moves
-        return self.adjust_moves(moves, board)
+        return self.adjust_moves(self.attack_moves(board), board)
 
 
 # class representing a queen in a chess game
@@ -116,6 +117,8 @@ class Queen(Piece):
 
     def possible_moves(self, board):
         return self.adjust_moves(self.attack_moves(board), board)
+
+
 
 
 # class representing a king in a chess game
@@ -148,30 +151,14 @@ class King(Piece):
         return moves
 
     def attack_moves(self, board):
-        return [[self.x - 1, self.y - 1], [self.x, self.y - 1], [self.x + 1, self.y - 1], [self.x + 1, self.y],
-                [self.x + 1, self.y + 1], [self.x, self.y + 1], [self.x - 1, self.y + 1], [self.x - 1, self.y]]
-
-    def can_move(self, currentmove: list[int], moves: list[list[int]], board):
-        enemymoves = self.enemy_moves(board, currentmove)
-        canmove = True
-        for piece in board.pieces:
-            if piece.x == currentmove[0] and piece.y == currentmove[1]:
-                canmove = False
-        if canmove and currentmove not in enemymoves:
-            moves.append(currentmove)
+        return [[self.x - 1, self.y - 1], [self.x, self.y - 1],
+                [self.x + 1, self.y - 1], [self.x + 1, self.y],
+                [self.x + 1, self.y + 1], [self.x, self.y + 1],
+                [self.x - 1, self.y + 1], [self.x - 1, self.y]]
 
     def possible_moves(self, board):
         # list to store the possible moves
-        moves = []
-        # add all possible moves for the king
-        self.can_move([self.x - 1, self.y - 1], moves, board)
-        self.can_move([self.x, self.y - 1], moves, board)
-        self.can_move([self.x + 1, self.y - 1], moves, board)
-        self.can_move([self.x + 1, self.y], moves, board)
-        self.can_move([self.x + 1, self.y + 1], moves, board)
-        self.can_move([self.x, self.y + 1], moves, board)
-        self.can_move([self.x - 1, self.y + 1], moves, board)
-        self.can_move([self.x - 1, self.y], moves, board)
+        moves = self.attack_moves(board)
         if not self.has_moved and not self.is_in_check(board, [-10,-10]):
             for d in (1, -1):
                 cantmove = False
@@ -194,7 +181,7 @@ class King(Piece):
         # return the list of possible moves
         return self.adjust_moves(moves, board)
 
-    def move(self, board):
+    def move(self, board, network):
         if self.selected:
             lastclick = board.board.lastclick
             for move in self.pos_moves:
@@ -226,4 +213,4 @@ class King(Piece):
                                         board.board[self.x - x - x - x -x][self.y].image = None
                                         piece.place_piece(board)
                                         done = True
-                    return super().move(board)
+                    return super().move(board, network)

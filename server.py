@@ -2,6 +2,8 @@ import pickle
 import socket
 from _thread import start_new_thread
 # Initialize server address and port
+from Components import Screens
+from Components.Screen.ScreenManager import ScreenManager
 from Network import Packet
 
 server = "0.0.0.0"
@@ -44,14 +46,22 @@ update = -1
 
 
 def save_to_file(id):
-    with open(f"save{id}.chess", "wb") as save:
+    with open(f"Saves/save{id}.chess", "wb") as save:
         pickle.dump(pieces, save)
 
 
 def load_from_file(id):
     global pieces
-    with open(f"save{id}.chess", "rb") as save:
+    with open(f"Saves/save{id}.chess", "rb") as save:
         pieces = pickle.load(save)
+
+
+def pygame_thread(ip, port):
+    screenmanager = ScreenManager()
+    screenmanager.set_screen("run", Screens.server_running_menu(ip, screenmanager, save_to_file))
+    while screenmanager.check_open():
+        screenmanager.draw()
+        screenmanager.tick()
 
 
 def threaded_connection(conn, *args):
@@ -132,11 +142,11 @@ def threaded_connection(conn, *args):
     print("Lost connection")
     conn.close()
     players -= 1
-    save_to_file(0)
 
 
 # Accept and handle incoming connections indefinitely
-load_from_file(0)
+#load_from_file(0)
+start_new_thread(pygame_thread, (server, port))
 players = 0
 while True:
     # Accept a new connection

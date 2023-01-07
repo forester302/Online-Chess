@@ -3,24 +3,18 @@ import pygame
 
 # class representing a piece in a chess game
 class Piece:
-    def __init__(self, pos, direction):
+    def __init__(self, pos, colour):
         # store the position of the piece
         self.pos_moves = []
         self.just_moved = None
         self.just_moved_lock = None
-        self.has_moved = None
+        self.has_moved = False
         self.x = pos[0]
         self.y = pos[1]
-        # store the direction of the piece (1=player 1/-1=player 2)
-        self.d = direction
+        # store the colour of the piece (1=player 1/-1=player 2)
+        self.d = colour
         # boolean indicating whether the piece is currently selected
         self.selected = False
-
-        # set the color of the piece based on the direction
-        if self.d > 0:
-            self.colour = (255, 0, 0)  # red
-        else:
-            self.colour = (0, 0, 255)  # blue
 
     def __repr__(self):
         return f"<{self.__class__.__name__} At ({self.x},{self.y})>"
@@ -47,7 +41,7 @@ class Piece:
             for pos in self.possible_moves(board):
                 pygame.draw.circle(board.board.screen, (0, 255, 0), (pos[0] * 75 + 37.5, pos[1] * 75 + 37.5), 25)
 
-    def move(self, board):
+    def move(self, board, network):
         if self.selected:
             self.selected = False
             lastclick = board.board.lastclick
@@ -76,16 +70,6 @@ class Piece:
     def possible_moves(self, board):
         # return an empty list by default
         return []
-
-    def check_move(self, currentmove, moves, board):
-        # Check if there is a piece in the way
-        for piece in board.pieces:
-            if piece.x == currentmove[0] and piece.y == currentmove[1]:
-                # If there is a piece in the way, set the cantmove flag to True
-                break
-        else:
-            if 8 >= currentmove[0] >= 0 and 8 >= currentmove[1] >= 0:
-                moves.append(currentmove)
 
     def get_moves_straight(self, board):
         def loop(range: range, x: bool = None):
@@ -165,6 +149,16 @@ class Piece:
             break
             # return the list of possible moves
         return moves
+
+    def check_move(self, currentmove, moves, board):
+        # Check if there is a piece in the way
+        for piece in board.pieces:
+            if piece.x == currentmove[0] and piece.y == currentmove[1]:
+                # If there is a piece in the way, set the cantmove flag to True
+                break
+        else:
+            if 8 >= currentmove[0] >= 0 and 8 >= currentmove[1] >= 0:
+                moves.append(currentmove)
 
     def adjust_moves(self, moves, board):
 

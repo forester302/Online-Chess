@@ -1,19 +1,19 @@
 import pygrille
 
 import Network.Packet, Network.Network
-from Components.Piece.piece import King
+from Components.Piece.piece import King, Rook, Queen, Bishop, Knight
 
 
 class Board:
-    # initialize variables for storing pieces on the board
-    pieces = None
-    otherpieces = None
-    king: King = None
-    is_turn = True
-    side: int = None
-    name: str = None
-
     def __init__(self):
+        # initialize variables for storing pieces on the board
+        self.pieces = None
+        self.otherpieces = None
+        self.king: King = None
+        self.is_turn = True
+        self.side: int = None
+        self.name: str = None
+
         # initialize the board and draw it to the screen
         self.board = gen_board()
 
@@ -56,9 +56,7 @@ def place_pieces(board):
         for square in row:
             square.image = None
     # place the current pieces down in the correct positions
-    for piece in board.pieces:
-        piece.place_piece(board)
-    for piece in board.otherpieces:
+    for piece in board.pieces + board.otherpieces:
         piece.place_piece(board)
     # draw the board
     board.board.draw()
@@ -93,3 +91,54 @@ def setup_board_network(ip: str, port: int, username: str):
     place_pieces(board)
 
     return board, network
+
+
+def promotion(pawn, board: Board, network: Network):
+    from Network import Update
+    board.board.set_ui("promote", "images/promotion.png", (75, 225), (451, 151))
+
+    pieces = {
+        2: Rook((2, 4), pawn.d),
+        3: Knight((3, 4), pawn.d),
+        4: Bishop((4, 4), pawn.d),
+        5: Queen((5, 4), pawn.d)
+    }
+
+    pieces2 = board.pieces
+    pieces3 = board.otherpieces
+
+    board.pieces = list(pieces.values())
+    board.otherpieces = []
+
+    place_pieces(board)
+
+    while board.board.check_open():
+        # check for updates from server
+        # if update returns false then the game is over
+        if not Update.update(network, board):
+            break
+
+        # check for new clicks on the board
+        if board.board.newclick:
+            lastclick = board.board.lastclick
+            if 2 <= lastclick[0] <= 5 and lastclick[1] == 4:
+                piece = pieces[lastclick[0]]
+                piece.x = pawn.x
+                piece.y = pawn.y
+
+                pieces2.remove(pawn)
+                pieces2.append(piece)
+
+                board.pieces = pieces2
+                board.otherpieces = pieces3
+
+                board.board.del_ui("promote")
+                place_pieces(board)
+                return
+
+    else:
+        # else is called if the while check fails (the window is closed)
+        network.send(Network.Packet.Quit)
+        quit()
+    while board.board.check_open():
+        pass

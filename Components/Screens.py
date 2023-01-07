@@ -1,9 +1,13 @@
+import os
+import socket
+
 from Components.Screen.Screen import Screen
 from Components.Screen.ScreenObjects.ScreenObject import ScreenObject
 from Components.Screen.ScreenObjects.Button import Button
 from Components.Screen.ScreenObjects.TextBox import TextBox
 from Components.Screen.ScreenObjects.Text import Text
 from Components.Screen.ScreenObjects.Image import Image
+from Components.Screen.ScreenManager import ScreenManager
 
 
 def client_main_menu():
@@ -29,8 +33,7 @@ def client_main_menu():
 
     # username input
     screen.add_object("usn_background", ScreenObject(10, 120, 100, 75, (255, 255, 255)))
-    screen.add_object("usn_text_box",
-                      TextBox(110, 120, 380, 75, colour=(255, 255, 255), newline=False))
+    screen.add_object("usn_text_box", TextBox(110, 120, 380, 75, colour=(255, 255, 255), newline=False))
     screen.get_object("usn_text_box").text.text = username
     screen.get_object("usn_text_box").make_rect()
     screen.add_object("usn_text", Text("Century", 30, "Name:"))
@@ -40,8 +43,7 @@ def client_main_menu():
     screen.add_object("ip_background", ScreenObject(10, 220, 100, 75, (255, 255, 255)))
     screen.add_object("ip_text", Text("Century", 30, "IP:"))
     screen.get_object("ip_text").position_left((30, 257.5))
-    screen.add_object("ip_text_box",
-                      TextBox(110, 220, 380, 75, colour=(255, 255, 255), newline=False))
+    screen.add_object("ip_text_box", TextBox(110, 220, 380, 75, colour=(255, 255, 255), newline=False))
     screen.get_object("ip_text_box").text.text = ip
     screen.get_object("ip_text_box").make_rect()
 
@@ -55,9 +57,8 @@ def client_main_menu():
     screen.get_object("port_text_box").make_rect()
 
     # submit button
-    screen.add_object("join_button", Button(10, 400, 480, 75,
-                                            lambda: join_button_clicked(),
-                                            colour=(155, 0, 0), hovercolour=(255, 0, 0)))
+    screen.add_object("join_button", Button(10, 400, 480, 75, lambda: join_button_clicked(), colour=(155, 0, 0),
+                                            hovercolour=(255, 0, 0)))
     screen.get_object("join_button").add_text("button_text", "Century", 30, "Join", centre=True)
     return screen
 
@@ -70,9 +71,30 @@ def server_load_screen():
     pass
 
 
-def server_running_menu():
-    pass
+def server_running_menu(port, screenmanager: ScreenManager, save_to_file):
+    screen = Screen((500, 500))
+    screen.add_object("save_button",
+                      Button(50, 50, 400, 300, lambda: screenmanager.set_screen("save", server_save_screen(save_to_file, screenmanager=screenmanager, port=port)),
+                             colour=(155, 0, 0), hovercolour=(255, 0, 0)))
+    screen.get_object("save_button").add_text("button_text", 'Century', 50, "Save Game", centre=True)
+    screen.add_object("ip_object", ScreenObject(50, 350, 400, 50, (255, 255, 255)))
+    screen.get_object("ip_object").add_text("ip_text", 'Century', 30,
+                                            f"IP:{socket.gethostbyname(socket.gethostname())}", centre=True,
+                                            colour=(0, 0, 0))
+    screen.add_object("port_object", ScreenObject(50, 400, 400, 50, (255, 255, 255)))
+    screen.get_object("port_object").add_text("port_text", 'Century', 30, f"Port:{port}", centre=True, colour=(0, 0, 0))
+    return screen
 
 
-def server_save_screen():
-    pass
+def server_save_screen(save_to_file, **kwargs):
+    def run(save_to_file, i, kwargs):
+        save_to_file(i)
+        kwargs["screenmanager"].set_screen("run")
+
+    screen = Screen((500, 500))
+    saves = os.listdir("./Saves")
+    for i in range(0, len(saves)):
+        screen.add_object(f"save{i}_button", Button(50, 50 + (150 * i), 400, 100, lambda: run(save_to_file, i, kwargs), colour=(155, 0, 0), hovercolour=(255, 0, 0)))
+        screen.get_object(f"save{i}_button").add_text("button_text", 'Century', 30, saves[i][:-6], colour=(0, 0, 0), centre=True)
+    return screen
+

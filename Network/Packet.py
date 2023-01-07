@@ -31,9 +31,9 @@ class Player:
         knight2 = Knight((6, 7), self.side)
         rook1 = Rook((0, 7), self.side)
         rook2 = Rook((7, 7), self.side)
-        # self.pieces = [king, rook2, rook1]
-        self.pieces = [king, bishop1, bishop2, knight1, knight2, pawn1, pawn2, pawn3, pawn4, pawn5, pawn6, pawn7, pawn8,
-                       queen, rook1, rook2]
+        self.pieces = [king, pawn4]
+        # self.pieces = [king, bishop1, bishop2, knight1, knight2, pawn1, pawn2, pawn3, pawn4, pawn5, pawn6, pawn7, pawn8,
+        #                queen, rook1, rook2]
 
 
 class EndGame:

@@ -31,7 +31,7 @@ class ScreenObject:
         return False
 
     def click(self):
-        for obj in self._objects:
+        for obj in self._objects.values():
             obj.click()
 
     def add_child(self, name: str, obj):
