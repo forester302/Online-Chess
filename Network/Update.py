@@ -63,6 +63,10 @@ def update_game_state(packet: Packet.Player, board: Board.Board, network: Networ
             return False
     else:
         # check for stalemate
+        if len(board.pieces + board.otherpieces) == 2:
+            popups["Stalemate"].popup(board)
+            network.send(Packet.EndGame("Stalemate"))
+            return False
         moves = []
         for piece in board.pieces:
             moves += piece.possible_moves(board)

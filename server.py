@@ -1,48 +1,68 @@
+import os
 import pickle
 import socket
 from _thread import start_new_thread
 # Initialize server address and port
+import pygame.font
+
 from Components import Screens
 from Components.Screen.ScreenManager import ScreenManager
 from Network import Packet
 
-server = "0.0.0.0"
-port = 5555  # input("Enter The Port The Server Should Run On: ")
 
-# Try to convert user input to integer and set default port if invalid
-try:
-    port = int(port)
-    # Set port to maximum value if too large
-    if port > 65535:
-        port = 65535
-    # Set port to minimum value if too small
-    if port <= 0:
-        port = 1
-# Set default port if input cannot be converted to integer
-except ValueError:
-    port = 5555
+def start_server():
+    print(pieces)
+    global players
+    server = "0.0.0.0"
+    port = 5555  # input("Enter The Port The Server Should Run On: ")
 
-# Create a TCP socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Try to convert user input to integer and set default port if invalid
+    try:
+        port = int(port)
+        # Set port to maximum value if too large
+        if port > 65535:
+            port = 65535
+        # Set port to minimum value if too small
+        if port <= 0:
+            port = 1
+    # Set default port if input cannot be converted to integer
+    except ValueError:
+        port = 5555
 
-# Try to bind the socket to the server address and port
-try:
-    s.bind((server, port))
-# Catch and print any errors that occur
-except socket.error as e:
-    print(e)
+    # Create a TCP socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Put the socket into listening mode
-s.listen()
+    # Try to bind the socket to the server address and port
+    try:
+        s.bind((server, port))
+    # Catch and print any errors that occur
+    except socket.error as e:
+        print(e)
 
-# Print a message indicating the server is ready to accept connections
-print(f"Waiting for a connection, Server Started on {socket.gethostbyname(socket.gethostname())}:{port}")
+    # Put the socket into listening mode
+    s.listen()
 
-pieces = [Packet.Player(1, False), Packet.Player(-1, False)]
-updates = [pieces[0], pieces[1]]
-for piece in pieces:
-    piece.gen_pieces()
-update = -1
+    # Print a message indicating the server is ready to accept connections
+    print(f"Waiting for a connection, Server Started on {socket.gethostbyname(socket.gethostname())}:{port}")
+
+    start_new_thread(pygame_thread, (server, port))
+    players = 0
+    # Accept and handle incoming connections indefinitely
+    while True:
+        # Accept a new connection
+        conn, addr = s.accept()
+        # Print the client address of the connection
+        print(f"Connected to: {addr}")
+        start_new_thread(threaded_connection, (conn, 0))
+        players += 1
+
+def gen_new_game():
+    global pieces, updates, update
+    pieces = [Packet.Player(1, False), Packet.Player(-1, False)]
+    updates = [pieces[0], pieces[1]]
+    for piece in pieces:
+        piece.gen_pieces()
+    update = -1
 
 
 def save_to_file(id):
@@ -51,17 +71,20 @@ def save_to_file(id):
 
 
 def load_from_file(id):
-    global pieces
+    global pieces, updates
     with open(f"Saves/save{id}.chess", "rb") as save:
         pieces = pickle.load(save)
+        updates = pieces
 
 
 def pygame_thread(ip, port):
     screenmanager = ScreenManager()
+    pygame.font.init()
     screenmanager.set_screen("run", Screens.server_running_menu(ip, screenmanager, save_to_file))
     while screenmanager.check_open():
         screenmanager.draw()
         screenmanager.tick()
+    os._exit(0)
 
 
 def threaded_connection(conn, *args):
@@ -106,6 +129,10 @@ def threaded_connection(conn, *args):
                 player.name = username
                 break
             # side = 0 for first player, side = 1 for second player
+        else:
+            conn.send(pickle.dumps(Packet.UsernameDenied()))
+            conn.close()
+            return
     else:
         conn.send(pickle.dumps(Packet.UsernameDenied()))
         conn.close()
@@ -144,14 +171,18 @@ def threaded_connection(conn, *args):
     players -= 1
 
 
-# Accept and handle incoming connections indefinitely
-#load_from_file(0)
-start_new_thread(pygame_thread, (server, port))
+def main():
+    screenmanager = ScreenManager()
+    screenmanager.set_screen("menu", Screens.server_main_menu(start_server, gen_new_game, load_from_file, screenmanager))
+    while screenmanager.check_open():
+        screenmanager.draw()
+
+pieces = []
+updates = []
+update = -1
 players = 0
-while True:
-    # Accept a new connection
-    conn, addr = s.accept()
-    # Print the client address of the connection
-    print(f"Connected to: {addr}")
-    start_new_thread(threaded_connection, (conn, 0))
-    players += 1
+if __name__ == "__main__":
+    main()
+
+
+
