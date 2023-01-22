@@ -9,4 +9,5 @@ class Image(ScreenObject):
         self.image = pygame.transform.scale(pygame.image.load(image_path), (sizex, sizey))
 
     def draw(self, screen: pygame.Surface):
+        # Draw the image on the screen surface at the rectangle position.
         screen.blit(self.image, self.rect)

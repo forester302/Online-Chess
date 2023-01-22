@@ -71,15 +71,12 @@ def server_main_menu(start_server, gen_new_game, load_from_file, screenmanager):
         pygame.quit()
         start_server_()
 
-    def load_game(load_from_file_, start_server_, screenmanager_):
-        screenmanager_.set_screen("load", server_load_screen(load_from_file_, start_server_))
-
     screen = Screen((500, 500))
     screen.add_object("new_game", Button(10, 10, 480, 235, lambda: new_game(gen_new_game, start_server),
                                          colour=(155, 0, 0), hovercolour=(255, 0, 0)))
     screen.get_object("new_game").add_text("button_text", "Century", 70, "New Game", centre=True)
     screen.add_object("load_game",
-                      Button(10, 255, 480, 235, lambda: load_game(load_from_file, start_server, screenmanager),
+                      Button(10, 255, 480, 235, lambda: screenmanager.set_screen("load"),
                              colour=(155, 0, 0), hovercolour=(255, 0, 0)))
     screen.get_object("load_game").add_text("button_text", "Century", 70, "Load Game", centre=True)
     return screen
@@ -102,13 +99,11 @@ def server_load_screen(load_from_file, start_server):
     return screen
 
 
-def server_running_menu(port, screenmanager: ScreenManager, save_to_file):
+def server_running_menu(port, screenmanager: ScreenManager):
     screen = Screen((500, 500))
     screen.add_object("save_button",
                       Button(50, 50, 400, 300,
-                             lambda: screenmanager.set_screen("save", server_save_screen(save_to_file,
-                                                                                         screenmanager=screenmanager,
-                                                                                         port=port)),
+                             lambda: screenmanager.set_screen("save"),
                              colour=(155, 0, 0), hovercolour=(255, 0, 0)))
     screen.get_object("save_button").add_text("button_text", 'Century', 50, "Save Game", centre=True)
     screen.add_object("ip_object", ScreenObject(50, 350, 400, 50, (255, 255, 255)))
@@ -120,16 +115,16 @@ def server_running_menu(port, screenmanager: ScreenManager, save_to_file):
     return screen
 
 
-def server_save_screen(save_to_file, **kwargs):
-    def run(save_to_file_, i_, _kwargs):
+def server_save_screen(save_to_file, screenmanager):
+    def run(save_to_file_, i_, screenmanager_):
         save_to_file_(i_)
-        _kwargs["screenmanager"].set_screen("run")
+        screenmanager_.set_screen("run")
 
     screen = Screen((500, 500))
     saves = os.listdir("./Saves")
     for i in range(0, len(saves)):
         screen.add_object(f"save{i}_button", Button(50, 50 + (150 * i), 400, 100,
-                                                    lambda i_=i: run(save_to_file, i_, kwargs),
+                                                    lambda i_=i: run(save_to_file, i_, screenmanager),
                                                     colour=(155, 0, 0), hovercolour=(255, 0, 0)))
         screen.get_object(f"save{i}_button").add_text("button_text", 'Century', 30, saves[i][:-6],
                                                       colour=(0, 0, 0), centre=True)

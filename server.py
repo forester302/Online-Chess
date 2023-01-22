@@ -80,7 +80,8 @@ def load_from_file(id):
 def pygame_thread(ip, port):
     screenmanager = ScreenManager()
     pygame.font.init()
-    screenmanager.set_screen("run", Screens.server_running_menu(ip, screenmanager, save_to_file))
+    screenmanager.set_screen("run", Screens.server_running_menu(ip, screenmanager))
+    screenmanager.add_screen("save", Screens.server_save_screen(save_to_file, screenmanager=screenmanager))
     while screenmanager.check_open():
         screenmanager.draw()
         screenmanager.tick()
@@ -174,6 +175,7 @@ def threaded_connection(conn, *args):
 def main():
     screenmanager = ScreenManager()
     screenmanager.set_screen("menu", Screens.server_main_menu(start_server, gen_new_game, load_from_file, screenmanager))
+    screenmanager.add_screen("load", Screens.server_load_screen(load_from_file, start_server))
     while screenmanager.check_open():
         screenmanager.draw()
 
