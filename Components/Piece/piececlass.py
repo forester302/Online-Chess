@@ -1,5 +1,8 @@
 import pygame
 
+SELECTED_SIDE_LENGTH = 25
+SQUARE_SIZE = 75
+
 
 # class representing a piece in a chess game
 class Piece:
@@ -37,9 +40,36 @@ class Piece:
         if self.x == board.board.lastclick[0] and self.y == board.board.lastclick[1]:
             # set the selected flag to True
             self.selected = True
+            # get local name for the constant SQUARE_SIDE so that it is easier to read.
+            ss = SQUARE_SIZE
+            # set sc (square centre) to be half the square length (SQUARE_SIZE)
+            sc = SQUARE_SIZE / 2
+            # set the radius to be the same as the side length on the slected triangles
+            r = SELECTED_SIDE_LENGTH
             # draw circles to show the possible moves
             for pos in self.possible_moves(board):
-                pygame.draw.circle(board.board.screen, (0, 255, 0), (pos[0] * 75 + 37.5, pos[1] * 75 + 37.5), 25)
+                pygame.draw.circle(board.board.screen, (0, 255, 0), (pos[0] * ss + sc, pos[1] * ss + sc), r)
+
+            # get local name for the constant SELECTED_SIDE_LENGTH so that it is easier to read.
+            sl = SELECTED_SIDE_LENGTH
+            # get a valuw for the square offset.
+            so = SQUARE_SIZE + 1
+            # bottom_left
+            pygame.draw.polygon(board.board.screen, (0, 255, 0), ((self.x * ss, self.y * ss + so),
+                                                                  (self.x * ss, self.y * ss + so - sl),
+                                                                  (self.x * ss + sl, self.y * ss + so)))
+            # top left
+            pygame.draw.polygon(board.board.screen, (0, 255, 0), ((self.x * ss, self.y * ss),
+                                                                  (self.x * ss, self.y * ss + sl),
+                                                                  (self.x * ss + sl, self.y * ss)))
+            # bottom right
+            pygame.draw.polygon(board.board.screen, (0, 255, 0), ((self.x * ss + so, self.y * ss + so),
+                                                                  (self.x * ss + so, self.y * ss + so - sl),
+                                                                  (self.x * ss + so - sl, self.y * ss + so)))
+            # top right
+            pygame.draw.polygon(board.board.screen, (0, 255, 0), ((self.x * ss + so, self.y * ss),
+                                                                  (self.x * ss + so, self.y * ss + sl),
+                                                                  (self.x * ss + so - sl, self.y * ss)))
 
     def move(self, board, network):
         if self.selected:
@@ -55,8 +85,7 @@ class Piece:
                     board.board.draw()
                     self.has_moved = True
 
-                    for i in range(0, len(board.otherpieces)):
-                        piece = board.otherpieces[i]
+                    for i, piece in enumerate(board.otherpieces):
                         if piece.x == self.x and piece.y == self.y:
                             board.otherpieces.pop(i)
                             break
@@ -90,6 +119,7 @@ class Piece:
                 else:
                     continue
                 break
+
         # list of possible moves
         moves = []
         # check all positions to the left of the piece
@@ -121,7 +151,7 @@ class Piece:
                 continue
             break
         # check all positions to the top-right of the piece
-        for i in range(1, 8-self.x):
+        for i in range(1, 8 - self.x):
             moves.append([self.x + i, self.y - i])
             for piece in board.pieces + board.otherpieces:
                 if piece.x == self.x + i and piece.y == self.y - i and piece != self:
@@ -139,7 +169,7 @@ class Piece:
                 continue
             break
         # check all positions to the bottom-right of the piece
-        for i in range(1, 8-self.x):
+        for i in range(1, 8 - self.x):
             moves.append([self.x + i, self.y + i])
             for piece in board.pieces + board.otherpieces:
                 if piece.x == self.x + i and piece.y == self.y + i and piece != self:
@@ -154,10 +184,9 @@ class Piece:
         # Check if there is a piece in the way
         for piece in board.pieces:
             if piece.x == currentmove[0] and piece.y == currentmove[1]:
-                # If there is a piece in the way, set the cantmove flag to True
                 break
         else:
-            if 8 >= currentmove[0] >= 0 and 8 >= currentmove[1] >= 0:
+            if 8 > currentmove[0] >= 0 and 8 > currentmove[1] >= 0:
                 moves.append(currentmove)
 
     def adjust_moves(self, moves, board):

@@ -14,18 +14,18 @@ from Components.Screen.ScreenManager import ScreenManager
 
 def client_main_menu():
     def join_button_clicked():
-        ip = screen.get_object("ip_text_box").text.text
-        username = screen.get_object("usn_text_box").text.text
+        ip_ = screen.get_object("ip_text_box").text.text
+        username_ = screen.get_object("usn_text_box").text.text
         try:
-            port = int(screen.get_object("port_text_box").text.text)
-        except:
+            port_ = int(screen.get_object("port_text_box").text.text)
+        except ValueError:
             return
-        with open("lastjoin", "w") as f:
-            f.write(username + "\n")
-            f.write(ip + "\n")
-            f.write(str(port))
+        with open("lastjoin", "w") as lj:
+            lj.write(username_ + "\n")
+            lj.write(ip_ + "\n")
+            lj.write(str(port_))
         import main
-        main.play(username, ip, port)
+        main.play(username_, ip_, port_)
 
     with open("lastjoin", "r") as f:
         username, ip, port = f.read().split("\n")
@@ -66,46 +66,49 @@ def client_main_menu():
 
 
 def server_main_menu(start_server, gen_new_game, load_from_file, screenmanager):
-    def new_game(gen_new_game, start_server):
-        gen_new_game()
+    def new_game(gen_new_game_, start_server_):
+        gen_new_game_()
         pygame.quit()
-        start_server()
+        start_server_()
 
-    def load_game(load_from_file, start_server, screenmanager):
-        screenmanager.set_screen("load", server_load_screen(load_from_file, start_server))
+    def load_game(load_from_file_, start_server_, screenmanager_):
+        screenmanager_.set_screen("load", server_load_screen(load_from_file_, start_server_))
 
     screen = Screen((500, 500))
-    screen.add_object("new_game", Button(10, 10, 480, 235, lambda: new_game(gen_new_game, start_server), colour=(155, 0, 0),
-                                            hovercolour=(255, 0, 0)))
+    screen.add_object("new_game", Button(10, 10, 480, 235, lambda: new_game(gen_new_game, start_server),
+                                         colour=(155, 0, 0), hovercolour=(255, 0, 0)))
     screen.get_object("new_game").add_text("button_text", "Century", 70, "New Game", centre=True)
     screen.add_object("load_game",
-                      Button(10, 255, 480, 235, lambda: load_game(load_from_file, start_server, screenmanager), colour=(155, 0, 0),
-                             hovercolour=(255, 0, 0)))
+                      Button(10, 255, 480, 235, lambda: load_game(load_from_file, start_server, screenmanager),
+                             colour=(155, 0, 0), hovercolour=(255, 0, 0)))
     screen.get_object("load_game").add_text("button_text", "Century", 70, "Load Game", centre=True)
     return screen
 
 
 def server_load_screen(load_from_file, start_server):
-    def run(load_from_file, i, start_server):
-        load_from_file(i)
+    def run(load_from_file_, i_, start_server_):
+        load_from_file_(i_)
         pygame.quit()
-        start_server()
+        start_server_()
 
     screen = Screen((500, 500))
     saves = os.listdir("./Saves")
     for i in range(0, len(saves)):
         screen.add_object(f"save{i}_button",
-                          Button(50, 50 + (150 * i), 400, 100, lambda i=i: run(load_from_file, i, start_server), colour=(155, 0, 0),
-                                 hovercolour=(255, 0, 0)))
-        screen.get_object(f"save{i}_button").add_text("button_text", 'Century', 30, saves[i][:-6], colour=(0, 0, 0),
-                                                      centre=True)
+                          Button(50, 50 + (150 * i), 400, 100, lambda i_=i: run(load_from_file, i_, start_server),
+                                 colour=(155, 0, 0), hovercolour=(255, 0, 0)))
+        screen.get_object(f"save{i}_button").add_text("button_text", 'Century', 30, saves[i][:-6],
+                                                      colour=(0, 0, 0), centre=True)
     return screen
 
 
 def server_running_menu(port, screenmanager: ScreenManager, save_to_file):
     screen = Screen((500, 500))
     screen.add_object("save_button",
-                      Button(50, 50, 400, 300, lambda: screenmanager.set_screen("save", server_save_screen(save_to_file, screenmanager=screenmanager, port=port)),
+                      Button(50, 50, 400, 300,
+                             lambda: screenmanager.set_screen("save", server_save_screen(save_to_file,
+                                                                                         screenmanager=screenmanager,
+                                                                                         port=port)),
                              colour=(155, 0, 0), hovercolour=(255, 0, 0)))
     screen.get_object("save_button").add_text("button_text", 'Century', 50, "Save Game", centre=True)
     screen.add_object("ip_object", ScreenObject(50, 350, 400, 50, (255, 255, 255)))
@@ -118,14 +121,16 @@ def server_running_menu(port, screenmanager: ScreenManager, save_to_file):
 
 
 def server_save_screen(save_to_file, **kwargs):
-    def run(save_to_file, i, kwargs):
-        save_to_file(i)
-        kwargs["screenmanager"].set_screen("run")
+    def run(save_to_file_, i_, _kwargs):
+        save_to_file_(i_)
+        _kwargs["screenmanager"].set_screen("run")
 
     screen = Screen((500, 500))
     saves = os.listdir("./Saves")
     for i in range(0, len(saves)):
-        screen.add_object(f"save{i}_button", Button(50, 50 + (150 * i), 400, 100, lambda i=i: run(save_to_file, i, kwargs), colour=(155, 0, 0), hovercolour=(255, 0, 0)))
-        screen.get_object(f"save{i}_button").add_text("button_text", 'Century', 30, saves[i][:-6], colour=(0, 0, 0), centre=True)
+        screen.add_object(f"save{i}_button", Button(50, 50 + (150 * i), 400, 100,
+                                                    lambda i_=i: run(save_to_file, i_, kwargs),
+                                                    colour=(155, 0, 0), hovercolour=(255, 0, 0)))
+        screen.get_object(f"save{i}_button").add_text("button_text", 'Century', 30, saves[i][:-6],
+                                                      colour=(0, 0, 0), centre=True)
     return screen
-

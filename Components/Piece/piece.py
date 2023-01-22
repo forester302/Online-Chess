@@ -119,8 +119,6 @@ class Queen(Piece):
         return self.adjust_moves(self.attack_moves(board), board)
 
 
-
-
 # class representing a king in a chess game
 class King(Piece):
     def __init__(self, pos, d):
@@ -159,25 +157,25 @@ class King(Piece):
     def possible_moves(self, board):
         # list to store the possible moves
         moves = self.attack_moves(board)
-        if not self.has_moved and not self.is_in_check(board, [-10,-10]):
+        if not self.has_moved and not self.is_in_check(board, [-10, -10]):
             for d in (1, -1):
                 cantmove = False
                 for piece in board.pieces + board.otherpieces:
-                    if self.x+(1*d) == piece.x and self.y == piece.y:
+                    if self.x + (1 * d) == piece.x and self.y == piece.y:
                         cantmove = True
                 for piece in board.pieces + board.otherpieces:
-                    if self.x+(2*d) == piece.x and self.y == piece.y:
+                    if self.x + (2 * d) == piece.x and self.y == piece.y:
                         cantmove = True
                 for piece in board.pieces + board.otherpieces:
-                    if self.x+(3*d) == piece.x and self.y == piece.y:
+                    if self.x + (3 * d) == piece.x and self.y == piece.y:
                         if not piece.__class__.__name__ == "Rook" or piece.has_moved:
                             cantmove = True
                 for piece in board.pieces:
-                    if self.x+(4*d) == piece.x and self.y == piece.y:
+                    if self.x + (4 * d) == piece.x and self.y == piece.y:
                         if not piece.__class__.__name__ == "Rook" or piece.has_moved:
                             cantmove = True
                 if not cantmove:
-                    moves.append([self.x+(2*d), self.y])
+                    moves.append([self.x + (2 * d), self.y])
         # return the list of possible moves
         return self.adjust_moves(moves, board)
 
@@ -186,7 +184,7 @@ class King(Piece):
             lastclick = board.board.lastclick
             for move in self.pos_moves:
                 if move[0] == lastclick[0] and move[1] == lastclick[1]:
-                    if self.__class__.__name__ == "King" and (self.y == 0 or self.y == 7):
+                    if self.y == 0 or self.y == 7:
                         if abs(self.x - lastclick[0]) > 1:
                             if self.x - lastclick[0] > 0:
                                 x = 1
@@ -203,14 +201,14 @@ class King(Piece):
                                 for piece in board.pieces:
                                     if piece.x == self.x - x - x - x and piece.y == self.y and piece.__class__.__name__ == "Rook":
                                         piece.x = lastclick[0] + x
-                                        board.board[self.x - x - x -x][self.y].image = None
+                                        board.board[self.x - x - x - x][self.y].image = None
                                         piece.place_piece(board)
                                         done = True
                             if not done:
                                 for piece in board.pieces:
                                     if piece.x == self.x - x - x - x - x and piece.y == self.y and piece.__class__.__name__ == "Rook":
                                         piece.x = lastclick[0] + x
-                                        board.board[self.x - x - x - x -x][self.y].image = None
+                                        board.board[self.x - x - x - x - x][self.y].image = None
                                         piece.place_piece(board)
                                         done = True
                     return super().move(board, network)

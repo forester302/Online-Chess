@@ -1,6 +1,6 @@
 from Components import Board
 from Components.Popup import popups
-from Network import Network, Packet
+from Components.Network import Network, Packet
 
 
 def end_game(packet: Packet.EndGame, board: Board):
@@ -10,7 +10,6 @@ def end_game(packet: Packet.EndGame, board: Board):
     elif packet.type == "Stalemate":
         popups["Stalemate"].popup(board)
         return False
-
 
 def other_player_quit(board):
     board.otherpieces = []
@@ -23,9 +22,12 @@ def other_player_check():
     return True
 
 
-def update_game_state(packet: Packet.Player, board: Board.Board, network: Network.Network):
+def update_game_state(packet: Packet.Player, board: Board.Board, network: Network):
     # Set the current player's turn to True.
     board.is_turn = not packet.is_turn
+
+    # remove this comment for username functionality
+    # board.board.set_text("otherusername", text=packet.name, pos=(0, 0), size=40, font="Century")
 
     # Sync the current player's pieces with the server's pieces.
     # This involves looping through the server's pieces and deleting
@@ -98,7 +100,7 @@ def update(network: Network.Network, board: Board):
         return other_player_quit(board)
 
     if isinstance(packet, Packet.Check):
-        return other_player_check
+        return other_player_check()
 
     # If the data we received is an instance of the Player class, then it represents
     # the other player's latest game state.

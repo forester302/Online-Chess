@@ -7,7 +7,7 @@ import pygame.font
 
 from Components import Screens
 from Components.Screen.ScreenManager import ScreenManager
-from Network import Packet
+from Components.Network import Packet
 
 
 def start_server():

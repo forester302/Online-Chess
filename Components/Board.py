@@ -1,6 +1,7 @@
 import pygrille
 
-import Network.Packet, Network.Network
+import Components.Network.Packet
+from Components.Network import Network, Update
 from Components.Piece.piece import King, Rook, Queen, Bishop, Knight
 
 
@@ -29,7 +30,9 @@ def gen_board():
     # create a grid using the pygrille library
     # the grid is 8x8 cells with a border width of 2 and a border color of (70,70,70)
     # the frame rate is set to 20 and the window is named "chess"
-    grid = pygrille.Grid(73, (8, 8), border_width=2, border_colour=(70, 70, 70), framerate=20, window_name="chess")
+    # remove these comments for username functionality
+    grid = pygrille.Grid(73, (8, 8), border_width=2, border_colour=(70, 70, 70), framerate=20, window_name="chess")# ,
+                         # forced_window_size=(602, 702), display_offset_y=50)
 
     # set the initial color to white
     colour = (255, 255, 255)
@@ -63,19 +66,21 @@ def place_pieces(board):
 
 
 def setup_board_network(ip: str, port: int, username: str):
-    network = Network.Network.Network(ip, port)
+    network = Components.Network.Network.Network(ip, port)
     packet = network.get_packet()
-    if isinstance(packet, Network.Packet.UsernameRequest):
-        network.send(Network.Packet.Username(username))
+    if isinstance(packet, Components.Network.Packet.UsernameRequest):
+        network.send(Components.Network.Packet.Username(username))
     else:
         print(packet)
         quit("Not a Server")
     player = network.get_packet()
-    if isinstance(player, Network.Packet.UsernameDenied):
+    if isinstance(player, Components.Network.Packet.UsernameDenied):
         quit("Username Denied")
 
     # create an instance of the Board class and generate the board
     board = Board()
+    # remove this comment for username functionality
+    # board.board.set_text("username", text=username, pos=(0, 645), size=40, font="Century")
 
     board.side = player.side
     board.name = player.name
@@ -94,9 +99,10 @@ def setup_board_network(ip: str, port: int, username: str):
 
 
 def promotion(pawn, board: Board, network: Network):
-    from Network import Update
+    # Display the promotion user interface, which consists of an image and 4 options for the user to select from
     board.board.set_ui("promote", "images/promotion.png", (75, 225), (451, 151))
 
+    # Create a dictionary of piece objects that the user can select from
     pieces = {
         2: Rook((2, 4), pawn.d),
         3: Knight((3, 4), pawn.d),
@@ -104,41 +110,53 @@ def promotion(pawn, board: Board, network: Network):
         5: Queen((5, 4), pawn.d)
     }
 
+    # Save the current pieces and otherpieces lists on the board
     pieces2 = board.pieces
     pieces3 = board.otherpieces
 
+    # Set the board's pieces and otherpieces lists to the options the user can select from
     board.pieces = list(pieces.values())
     board.otherpieces = []
 
+    # Place the pieces on the board
     place_pieces(board)
 
+    # Keep looping as long as the promotion UI is open
     while board.board.check_open():
-        # check for updates from server
-        # if update returns false then the game is over
+        # Check for updates from the server
+        # If update returns False, the game is over
         if not Update.update(network, board):
             break
 
-        # check for new clicks on the board
+        # Check if the user has made a new click on the board
         if board.board.newclick:
+            # Get the coordinates of the user's last click
             lastclick = board.board.lastclick
+            # If the user clicked on a valid piece option
             if 2 <= lastclick[0] <= 5 and lastclick[1] == 4:
+                # Get the selected piece object
                 piece = pieces[lastclick[0]]
+                # Set the piece's position to the pawn's position
                 piece.x = pawn.x
                 piece.y = pawn.y
 
+                # Replace the pawn with the selected piece in the board's pieces list
                 pieces2.remove(pawn)
                 pieces2.append(piece)
 
+                # Reset the board's pieces and otherpieces lists
                 board.pieces = pieces2
                 board.otherpieces = pieces3
 
+                # Close the promotion UI and place the pieces on the board
                 board.board.del_ui("promote")
                 place_pieces(board)
                 return
 
+    # If the window is closed by the user, send a Quit packet to the server and exit the game
     else:
-        # else is called if the while check fails (the window is closed)
-        network.send(Network.Packet.Quit)
+        network.send(Components.Network.Packet.Quit)
         quit()
+    # Keep looping until the promotion UI is closed
     while board.board.check_open():
         pass

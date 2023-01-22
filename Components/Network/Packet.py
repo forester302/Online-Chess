@@ -31,11 +31,12 @@ class Player:
         knight2 = Knight((6, 7), self.side)
         rook1 = Rook((0, 7), self.side)
         rook2 = Rook((7, 7), self.side)
-        self.pieces = [king, pawn4]
-        # self.pieces = [king, bishop1, bishop2, knight1, knight2, pawn1, pawn2, pawn3, pawn4, pawn5, pawn6, pawn7, pawn8,
-        #                queen, rook1, rook2]
+        # self.pieces = [king, pawn4]
+        self.pieces = [king, bishop1, bishop2, knight1, knight2, pawn1, pawn2, pawn3, pawn4, pawn5, pawn6, pawn7, pawn8,
+                       queen, rook1, rook2]
 
 
+# EndGame of either Checkmate or Stalemate
 class EndGame:
     def __init__(self, type):
         self.type = type
@@ -71,7 +72,7 @@ class UsernameRequest:
 
 class Username:
     def __init__(self, name: str):
-        self.name = name.lower()
+        self.name = name
 
     def __repr__(self):
         return self.name

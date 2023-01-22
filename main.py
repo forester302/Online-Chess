@@ -1,7 +1,6 @@
 import pygame
-from Network import Packet
+from Components.Network import Packet, Update
 from Components import Board, Screens
-from Network import Update
 
 from Components.Screen.ScreenManager import ScreenManager
 
@@ -43,7 +42,6 @@ def click(board, network):
 def play(username, ip, port):
     # Create the board and the network
     board, network = Board.setup_board_network(ip, port, username)
-
 
     while board.board.check_open():
         # check for updates from server
