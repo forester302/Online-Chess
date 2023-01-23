@@ -1,2 +1,0 @@
-pygame==2.1.2
-pygrille==0.2.0.1
