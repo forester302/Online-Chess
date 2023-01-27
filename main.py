@@ -25,6 +25,7 @@ def click(board, network):
         # The player's updated game state is then sent over the network using the `network` object.
         if piece.move(board, network):
             board.is_turn = False
+            sounds["move"].play()
             playerobject = Packet.Player(board.side, board.is_turn, board.name)
             playerobject.pieces = board.pieces
             network.send(playerobject)
@@ -40,6 +41,8 @@ def click(board, network):
 
 
 def play(username, ip, port):
+    sounds["move"] = pygame.mixer.Sound("Sounds/move.wav")
+
     # Create the board and the network
     board, network = Board.setup_board_network(ip, port, username)
 
@@ -60,6 +63,8 @@ def play(username, ip, port):
     while board.board.check_open():
         pass
 
-
+pygame.mixer.init()
+sounds: dict[str, pygame.mixer.Sound] = {}
 if __name__ == "__main__":
     main()
+

@@ -65,7 +65,7 @@ def client_main_menu():
     return screen
 
 
-def server_main_menu(start_server, gen_new_game, load_from_file, screenmanager):
+def server_main_menu(start_server, gen_new_game, screenmanager):
     def new_game(gen_new_game_, start_server_):
         gen_new_game_()
         pygame.quit()

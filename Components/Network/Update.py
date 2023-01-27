@@ -82,6 +82,7 @@ def update_game_state(packet: Packet.Player, board: Board.Board, network: Networ
 
 
 def update(network: Network.Network, board: Board):
+    from main import sounds
     # Send a message to the server indicating that we are ready for an update.
     network.send(Packet.UpdateRequest())
 
@@ -105,6 +106,7 @@ def update(network: Network.Network, board: Board):
     # If the data we received is an instance of the Player class, then it represents
     # the other player's latest game state.
     if isinstance(packet, Packet.Player):
+        sounds["move"].play()
         return update_game_state(packet, board, network)
 
     return True
